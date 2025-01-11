@@ -88,9 +88,16 @@ void parseLink(const Link& link, int depth)
 		for (std::sregex_iterator i = begin; i != end; ++i) {
 			std::smatch match = *i;
 			std::string url = match[1].str();
-			//не добавляем ссылки, по которым не получится пройти "напрямую" и запарсить
+			//не добавляем ссылки, по которым не получится пройти "напрямую" и запарсить 
+			//ИСПРАВЛЯЕМ
+			//если не находим, впереди добавляем текущую ссылку
+
 			if (url.substr(0, 4) != "http") {
+				//std::cout << std::endl << "BEFORE: ";
+				//std::cout << url << std::endl;
 				//std::cout << url.substr(0, 4) << std::endl;
+				url = GetStringFullUrlFromLink(link) + url;
+				//std::cout << std::endl << "AFTER: " << url;
 				continue;
 			}
 			//std::cout << url << std::endl;

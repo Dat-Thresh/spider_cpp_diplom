@@ -6,7 +6,8 @@
 #include <codecvt>
 #include <iostream>
 #include "../DB/DB_worker.h"
-#include "../config_and_utils.h"
+#include <boost/locale.hpp>
+
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -39,8 +40,8 @@ std::string convert_to_utf8(const std::string& str) {
 	return url_decoded;
 }
 
-HttpConnection::HttpConnection(tcp::socket socket)
-	: socket_(std::move(socket))
+HttpConnection::HttpConnection(tcp::socket socket, Config_data& ini_data)
+	: socket_(std::move(socket)), ini_data_(&ini_data)
 {
 }
 
@@ -168,10 +169,16 @@ void HttpConnection::createResponsePost()
 		//	"https://en.wikipedia.org/wiki/Wikipedia",
 		//};
 
-		Config_data ini_data;
-		ini_data.GetConfigFromFile("C:/Netology/Diplom project/config.ini");
-		DB_worker DB_worker(ini_data.getConnectionData());
+		DB_worker DB_worker(ini_data_->getConnectionData());
+
+		boost::locale::generator gen;
+		std::locale loc = gen("");
+		std::locale::global(loc);
+		std::wcout.imbue(loc);
+		value = boost::locale::to_lower(value);
+
 		std::vector<std::string>buffer = SplitToWords(value);
+		
 		std::vector<std::string> searchResult = DB_worker.GetSearchResult(buffer);
 
 		response_.set(http::field::content_type, "text/html");

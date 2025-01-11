@@ -13,14 +13,14 @@
 #include "../config_and_utils.h"
 
 
-void httpServer(tcp::acceptor& acceptor, tcp::socket& socket)
+void httpServer(tcp::acceptor& acceptor, tcp::socket& socket, Config_data& ini_data)
 {
 	acceptor.async_accept(socket,
 		[&](beast::error_code ec)
 		{
 			if (!ec)
-				std::make_shared<HttpConnection>(std::move(socket))->start();
-			httpServer(acceptor, socket);
+				std::make_shared<HttpConnection>(std::move(socket), ini_data)->start();
+			httpServer(acceptor, socket, ini_data);
 		});
 }
 
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
 		tcp::acceptor acceptor{ioc, { address, port }};
 		tcp::socket socket{ioc};
-		httpServer(acceptor, socket);
+		httpServer(acceptor, socket, ini_data);
 
 		std::cout << "Open browser and connect to http://localhost:" + std::to_string(ini_data.server_port) +
 			" to see the web server operating" << std::endl;

@@ -6,3 +6,4 @@
 std::string getHtmlContent(const Link& link);
 
 std::string clearHtmlContent(std::string& html);
+

@@ -66,14 +66,13 @@ Link MakeLinkFromString(std::string& url) {
 	std::string hostname;
 	int querystart = 0;
 	for (int i = 0; i < buffer.length(); ++i) {
-		if (buffer[i] == '/') {
+		if (buffer[i] == '/' || buffer[i] == ':') {
 			querystart = i;
 			break;
 		}
 		hostname += buffer[i];
 	}
 	std::string query = buffer.substr(hostname.length(), buffer.length());
-
 	return Link{ prot, hostname, query };
 }
 

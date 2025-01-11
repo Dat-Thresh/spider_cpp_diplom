@@ -4,6 +4,7 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 #include <boost/asio.hpp>
+#include "../config_and_utils.h"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -22,6 +23,7 @@ protected:
 
 	http::response<http::dynamic_body> response_;
 
+	Config_data* ini_data_;
 
 	net::steady_timer deadline_{
 		socket_.get_executor(), std::chrono::seconds(60)};
@@ -36,7 +38,7 @@ protected:
 	void checkDeadline();
 
 public:
-	HttpConnection(tcp::socket socket);
+	HttpConnection(tcp::socket socket, Config_data& ini_data);
 	void start();
 };
 
