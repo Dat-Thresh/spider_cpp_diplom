@@ -106,3 +106,42 @@ std::vector<std::string> SplitToWords(std::string& value) {
 
 	return values;
 }
+
+std::vector<Link> CollectUrlsFromHtmlDoc(Link link, std::string& html) {
+	std::regex s_sublink(R"(<a\s+href\s*=\s*\"(.*?)\")", std::regex_constants::ECMAScript | std::regex_constants::icase);
+	std::smatch url_match;
+
+	std::vector<Link> s_links;
+
+	// »тераци€ и поиск всех совпадений
+	auto begin = std::sregex_iterator(html.begin(), html.end(), s_sublink);
+
+	auto end = std::sregex_iterator();
+
+	for (std::sregex_iterator i = begin; i != end; ++i) {
+		std::smatch match = *i;
+		std::string url = match[1].str();
+
+		//»—ѕ–ј¬Ћя≈ћ
+		//если не находим наименование протокола, впереди добавл€ем текущую ссылку предварительно провер€€ на символ # в начале
+		//если # в начале -- пропускаем
+
+		if (url.substr(0, 4) != "http") {
+			if (url[0] == '#')
+				continue;
+
+			std::cout << std::endl << "BEFORE: ";
+			std::cout << url << std::endl;
+			//std::cout << url.substr(0, 4) << std::endl;
+			//если в query находим #, то обрубаем строку от этого символа до конца строки
+			if (url.find('#'))
+				url = url.substr(0, url.find('#')-1);
+			url = GetStringFullUrlFromLink(link) + url;
+
+			
+		}
+		std::cout << std::endl << "AFTER: " << url << std::endl;
+		s_links.push_back(MakeLinkFromString(url));
+	}
+	return s_links;
+}

@@ -12,8 +12,7 @@
 #include "../DB/DB_worker.h"
 #include "../config_and_utils.h"
 #include <Windows.h>
-#include <iterator>
-#include <regex>
+
 
 
 std::mutex mtx;
@@ -73,59 +72,16 @@ void parseLink(const Link& link, int depth)
 
 		ParseStringToDB(link, clearedString);
 
+		
 		// TODO: Collect more links from HTML code and add them to the parser like that:
+		std::vector<Link> s_links = CollectUrlsFromHtmlDoc(link, html);
 		 
-		std::regex s_sublink(R"(<a\s+href\s*=\s*\"(.*?)\")", std::regex_constants::ECMAScript | std::regex_constants::icase);
-		std::smatch url_match;
-
-		std::vector<Link> s_links;
-
-		// Итерация и поиск всех совпадений
-		auto begin = std::sregex_iterator(html.begin(), html.end(), s_sublink);
-
-		auto end = std::sregex_iterator();
-
-		for (std::sregex_iterator i = begin; i != end; ++i) {
-			std::smatch match = *i;
-			std::string url = match[1].str();
-			//не добавляем ссылки, по которым не получится пройти "напрямую" и запарсить 
-			//ИСПРАВЛЯЕМ
-			//если не находим, впереди добавляем текущую ссылку
-
-			if (url.substr(0, 4) != "http") {
-				//std::cout << std::endl << "BEFORE: ";
-				//std::cout << url << std::endl;
-				//std::cout << url.substr(0, 4) << std::endl;
-				url = GetStringFullUrlFromLink(link) + url;
-				//std::cout << std::endl << "AFTER: " << url;
-				continue;
-			}
-			//std::cout << url << std::endl;
-			s_links.push_back(MakeLinkFromString(url));
-		}
 
 		// Вывод всех найденных ссылок
 		//for (const auto& link : s_links) {
 		//	std::cout << link << std::endl;
 		//}
 		
-		//Для реализации HTTP - клиента рекомендуется подключить и использовать библиотеку Boost Beast.
-		//Порт, на котором будет запущен HTTP-сервер, должен взять из ini-файла конфигурации
-
-		//Все настройки программ следует хранить в ini - файле.Этот файл должен парситься при запуске вашей программы.
-
-	
-		//  в вектор записываем основную ссылку текущей глубины и к ней пути -- сублинки -- найденные ссылки внутри этой ссылки?
-
-				//глубина рекурсии depth ограничена
-				//собираем ссылки в очередь на скачивание 
-				//реализуем пул потоков для выполнения скачивания и индексации
-
-
-		//std::vector<Link> links = {
-		//	{ProtocolType::HTTPS, "en.wikipedia.org", "/wiki/Wikipedia"},
-		//	{ProtocolType::HTTPS, "wikimediafoundation.org", "/"},
-		//};
 
 		if (depth > 0) {
 			std::lock_guard<std::mutex> lock(mtx);
@@ -203,17 +159,12 @@ void ParseStringToDB(const Link& link, std::string& words) {
 	setlocale(LC_ALL, "en-US");
 
 	DB_worker DB_worker(ini_data.getConnectionData());
-	//pqxx::connection DBc(
-	//	con_data.getConnectionData()
-	//);
+
 	if (!createdTables) {
 		DB_worker.setTablesAndPrepares();
 		createdTables = true;
 	}
 	
-	/*DBc.prepare("insert_wordrepeatsindocs", "INSERT INTO WordRepeatsInDocs (url_id, word_id, number) VALUES ($1, $2, $3)");
-	DBc.prepare("find_wordrepeatsindocs", "SELECT number FROM WordRepeatsInDocs WHERE (word_id = $1 AND url_id = $2)");
-	DBc.prepare("update_wordrepeatsindocs", "UPDATE WordRepeatsInDocs SET number = number + 1 WHERE word_id = $1 AND url_id = $2");*/
 
 
 	DB_worker.addUrlToTable(GetStringFullUrlFromLink(link));
